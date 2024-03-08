@@ -24,7 +24,7 @@ exports.newPayment = async (req, res) => {
             merchantUserId: Merchenat,
             name: checkUserPresent.Name || "User",
             amount: amount * 100,
-            redirectUrl: `http://localhost:5000/api/v2/status/${merchantTransactionId}?token=${req.headers.authorization.split(" ")[1]}`,
+            redirectUrl: `https://motion-63l4.onrender.com/api/v2/status/${merchantTransactionId}?token=${req.headers.authorization.split(" ")[1]}`,
             redirectMode: 'POST',
             mobileNumber: checkUserPresent.Number || "123456789",
             paymentInstrument: {
