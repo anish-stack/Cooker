@@ -1,5 +1,5 @@
 const express = require('express')
-const { RegisterUser, LogginUser, LogoutUser,getUserIdbyUser,createContact,getContacts   } = require('../controllers/usercontroller')
+const { RegisterUser, LogginUser, LogoutUser,getUserIdbyUser,createContact,getContacts,getAllUser   } = require('../controllers/usercontroller')
 const { createProduct, getAllProducts, getOneProduct, updateProduct, deleteProduct, getProductByKeywords } = require('../controllers/productController')
 const { protect } = require('../middleware/authmiddlleware')
 const { CreateOrder, orderForMe, orderForAdmin, UpdateOrderStatus, getTransactionID } = require('../controllers/orderController')
@@ -9,6 +9,9 @@ const router  =express.Router()
 router.post('/Register',RegisterUser)
 router.post('/Contact',createContact )
 router.get('/getContact',getContacts )
+router.get('/getAllUser',getAllUser )
+
+
 
 
 router.post('/Login',LogginUser)
