@@ -2,7 +2,7 @@
 const User = require("../models/user.model");
 const sendEmail = require("../utils/sendMail");
 const sendToken = require("../utils/SendToken")
-const Contact = require("../models/contactModel")
+const Contact = require("../models/contactModel");
 
 exports.createContact = async (req, res) => {
   try {
@@ -39,6 +39,7 @@ exports.getContacts = async (req, res) => {
     res.status(500).json({ error: 'Internal server error.' });
   }
 };
+
 // Register
 exports.RegisterUser = async (req, res) => {
   try {
