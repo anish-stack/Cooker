@@ -39,7 +39,15 @@ exports.getContacts = async (req, res) => {
     res.status(500).json({ error: 'Internal server error.' });
   }
 };
-
+exports.getAllUser = async (req, res) => {
+  try {
+    const Users = await User.find();
+    res.status(200).json(Users);
+  } catch (error) {
+    console.error('Error retrieving Users:', error);
+    res.status(500).json({ error: 'Internal server error.' });
+  }
+};
 // Register
 exports.RegisterUser = async (req, res) => {
   try {
