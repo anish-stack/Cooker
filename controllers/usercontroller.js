@@ -2,6 +2,33 @@
 const User = require("../models/user.model");
 const sendEmail = require("../utils/sendMail");
 const sendToken = require("../utils/SendToken")
+const newContact = require("../models/contactModel")
+
+exports.createContact = async (req, res) => {
+  try {
+    const { Name, Email, PhoneNumber, Message } = req.body;
+
+    // Validate request data (you might want to add more validation)
+    if (!Name || !Email || !PhoneNumber || !Message) {
+      return res.status(400).json({ error: 'Please provide all required fields.' });
+    }
+
+    const newContact = new Contact({
+      Name,
+      Email,
+      PhoneNumber,
+      Message,
+    });
+
+    // Save the new contact to the database
+    await newContact.save();
+
+    res.status(201).json({ message: 'Contact created successfully.' });
+  } catch (error) {
+    console.error('Error creating contact:', error);
+    res.status(500).json({ error: 'Internal server error.' });
+  }
+};
 
 
 // Register
