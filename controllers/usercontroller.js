@@ -2,7 +2,7 @@
 const User = require("../models/user.model");
 const sendEmail = require("../utils/sendMail");
 const sendToken = require("../utils/SendToken")
-const newContact = require("../models/contactModel")
+const Contact = require("../models/contactModel")
 
 exports.createContact = async (req, res) => {
   try {
@@ -30,7 +30,15 @@ exports.createContact = async (req, res) => {
   }
 };
 
-
+exports.getContacts = async (req, res) => {
+  try {
+    const contacts = await Contact.find();
+    res.status(200).json(contacts);
+  } catch (error) {
+    console.error('Error retrieving contacts:', error);
+    res.status(500).json({ error: 'Internal server error.' });
+  }
+};
 // Register
 exports.RegisterUser = async (req, res) => {
   try {
