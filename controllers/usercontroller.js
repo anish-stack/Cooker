@@ -3,6 +3,84 @@ const User = require("../models/user.model");
 const sendEmail = require("../utils/sendMail");
 const sendToken = require("../utils/SendToken")
 const Contact = require("../models/contactModel");
+const bcrypt = require('bcrypt');
+
+// ... Other imports and controller functions ...
+
+// Change Password
+exports.changePassword = async (req, res) => {
+  try {
+    const { oldPassword, newPassword, confirmPassword } = req.body;
+    const userId = req.user._id; // Assuming you have user information stored in req.user
+
+    // Validate if no empty field
+    const emptyFields = [];
+
+    if (!oldPassword) {
+      emptyFields.push('Old Password');
+    }
+
+    if (!newPassword) {
+      emptyFields.push('New Password');
+    }
+
+    if (!confirmPassword) {
+      emptyFields.push('Confirm Password');
+    }
+
+    if (emptyFields.length > 0) {
+      return res.status(400).json({
+        success: false,
+        message: `The following fields are required: ${emptyFields.join(', ')}`,
+      });
+    }
+
+    // Check if the new password and confirm password match
+    if (newPassword !== confirmPassword) {
+      return res.status(400).json({
+        success: false,
+        message: 'New Password and Confirm Password do not match',
+      });
+    }
+
+    // Check if the provided old password matches the current password in the database
+    const user = await User.findById(userId);
+
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        message: 'User not found',
+      });
+    }
+
+    const isPasswordMatch = await bcrypt.compare(oldPassword, user.Password);
+
+    if (!isPasswordMatch) {
+      return res.status(401).json({
+        success: false,
+        message: 'Old Password is incorrect',
+      });
+    }
+
+    // Hash the new password
+    const hashedNewPassword = await bcrypt.hash(newPassword, 10);
+
+    // Update the user's password in the database
+    user.Password = hashedNewPassword;
+    await user.save();
+
+    return res.status(200).json({
+      success: true,
+      message: 'Password changed successfully',
+    });
+  } catch (error) {
+    console.error('Error during password change:', error);
+    return res.status(500).json({
+      success: false,
+      message: 'Internal Server Error',
+    });
+  }
+};
 
 exports.createContact = async (req, res) => {
   try {
