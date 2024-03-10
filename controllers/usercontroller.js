@@ -10,8 +10,8 @@ const bcrypt = require('bcrypt');
 // Change Password
 exports.changePassword = async (req, res) => {
   try {
-    const { oldPassword, newPassword, confirmPassword } = req.body;
-    const userId = req.user._id; // Assuming you have user information stored in req.user
+    const { oldPassword, newPassword, confirmPassword,id } = req.body;
+    const userId = id // Assuming you have user information stored in req.user
 
     // Validate if no empty field
     const emptyFields = [];
