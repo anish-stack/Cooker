@@ -8,10 +8,11 @@ const bcrypt = require('bcrypt');
 // ... Other imports and controller functions ...
 
 // Change Password
+// Change Password
 exports.changePassword = async (req, res) => {
   try {
-    const { oldPassword, newPassword, confirmPassword,id } = req.body;
-    const userId = id // Assuming you have user information stored in req.user
+    const { oldPassword, newPassword, confirmPassword, id } = req.body;
+    const userId = id; // Assuming you have user information stored in req.user
 
     // Validate if no empty field
     const emptyFields = [];
@@ -53,7 +54,7 @@ exports.changePassword = async (req, res) => {
       });
     }
 
-    const isPasswordMatch = await bcrypt.compare(oldPassword, user.Password);
+    const isPasswordMatch = await user.comparePassword(oldPassword);
 
     if (!isPasswordMatch) {
       return res.status(401).json({
@@ -81,6 +82,7 @@ exports.changePassword = async (req, res) => {
     });
   }
 };
+
 
 exports.createContact = async (req, res) => {
   try {
