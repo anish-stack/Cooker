@@ -11,7 +11,11 @@ const SizeAndStock = new mongoose.Schema({
     },
     StockPrice: {
         type: String,
+    },
+    adjustedPrice:{
+        type: String,
     }
+
 });
 
 const ProductSchema = new mongoose.Schema({
