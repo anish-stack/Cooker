@@ -88,22 +88,31 @@ exports.makeOrderCancelAndReturn = async()=>{
 
 exports.orderForAdmin = async (req, res) => {
   try {
-    console.log("i am  here");
+    console.log("I am here");
     const CheckUserInOrder = await Order.find();
-    console.log(CheckUserInOrder);
-    if (!CheckUserInOrder.length > 0) {
+    const OrderIds = CheckUserInOrder.map((item) => item._id);
+
+    // Use the $in operator to find payments for all order IDs
+    const paymentS = await Payment.find({ order: { $in: OrderIds } });
+    
+    console.log(paymentS);
+
+    // Filter orders based on whether they have corresponding payments
+    const ordersWithPayments = CheckUserInOrder.filter((order) => {
+      return paymentS.some((payment) => payment.order.equals(order._id));
+    });
+
+    if (!ordersWithPayments.length > 0) {
       return res.status(404).json({
         success: false,
-        message: "No Order Found",
+        message: "No Orders Found with Payments",
       });
     }
 
-    // console.log(CheckUserInOrder)
-
     res.status(201).json({
       success: true,
-      message: "Admin Order Found",
-      data: CheckUserInOrder,
+      message: "Admin Orders Found with Payments",
+      data: ordersWithPayments,
     });
   } catch (error) {
     console.log(error);
@@ -113,7 +122,6 @@ exports.orderForAdmin = async (req, res) => {
     });
   }
 };
-
 //update order
 exports.UpdateOrderStatus = async (req, res) => {
   try {
