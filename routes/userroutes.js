@@ -18,7 +18,7 @@ router.get('/getAllUser',getAllUser )
 
 router.post('/Login',LogginUser)
 router.get('/Logout',protect,LogoutUser)
-router.get('/Products/:keyword',getProductByKeywords)
+router.get('/Products/:category',getProductByKeywords)
 
 
 router.post('/create-product',protect,createProduct)
