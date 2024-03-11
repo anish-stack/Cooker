@@ -194,9 +194,9 @@ exports.getOneProduct = async (req, res) => {
 
 exports.getProductByKeywords = async (req, res) => {
   try {
-    const { keyword } = req.params;
+    const { category } = req.params;
     // console.log(req.params)
-    let products = await Product.find({ category:keyword  });
+    let products = await Product.find({ category  });
     
     // Check if products were found
     if (products.length === 0) {
