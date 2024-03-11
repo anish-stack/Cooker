@@ -24,7 +24,7 @@ exports.createProduct = async (req, res) => {
 
     if (!ProductName) missingFields.push('ProductName');
     if (!ProductDescription) missingFields.push('ProductDescription');
-    if (!prices) missingFields.push('prices');
+
     if (!tag) missingFields.push('tag');
     if (!sizes) missingFields.push('sizes');
     if (!image) missingFields.push('image');
