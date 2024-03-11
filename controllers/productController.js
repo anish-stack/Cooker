@@ -13,6 +13,7 @@ exports.createProduct = async (req, res) => {
       tag,
       sizes,
       color,
+      adjustedPrice,
       image,
       inStock,
       category,
@@ -51,6 +52,7 @@ exports.createProduct = async (req, res) => {
       image,
       inStock,
       category,
+      adjustedPrice,
       keyword,
     });
 
