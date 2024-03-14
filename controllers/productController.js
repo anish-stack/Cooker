@@ -2,75 +2,58 @@ const Product = require("../models/product.model");
 
 // Create product
 exports.createProduct = async (req, res) => {
+
   try {
-    console.log('Received request body:', req.body);
+      const {
 
-    const {
-      ProductName,
-      ProductDescription,
-      discountPrice, // Fixed typo here
-      prices,
-      tag,
-      sizes,
-      color,
-      adjustedPrice,
-      image,
-      inStock,
-      category,
-      keyword,
-    } = req.body;
+          productName,
+          images,
+          property,
+          sizes,
+          originalPrice,
+          discoPrice,
+          vendor,
+          sku,
+          avilable,
+          productType,
+          Desc,
+          Category,
+          addInfo
+      } = req.body;
 
-    // Checking all fields
-    const missingFields = [];
+      // Check if required fields are present
+      if ( !productName || !images || !property || !sizes || !originalPrice || !discoPrice || !vendor || !sku || !avilable || !productType || !Desc || !Category || !addInfo) {
+          return res.status(400).json({ error: 'Missing required fields' });
+      }
 
-    if (!ProductName) missingFields.push('ProductName');
-    if (!ProductDescription) missingFields.push('ProductDescription');
-
-    if (!tag) missingFields.push('tag');
-    if (!sizes) missingFields.push('sizes');
-    if (!image) missingFields.push('image');
-    if (!category) missingFields.push('category');
-    if (!keyword) missingFields.push('keyword');
-
-    if (missingFields.length > 0) {
-      return res.status(400).json({
-        success: false,
-        message: 'Please provide all the required fields',
-        missingFields: missingFields,
+      // Create a new product instance
+      const newProduct = new Product({
+     
+          productName,
+          images,
+          property,
+          sizes,
+          originalPrice,
+          discoPrice,
+          vendor,
+          sku,
+          avilable,
+          productType,
+          Desc,
+          Category,
+          addInfo
       });
-    }
 
-    // Creating the product
-    const newProduct = new Product({ // Changed 'product' to 'Product'
-      ProductName,
-      ProductDescription,
-      discountPrice, // Fixed typo here
-      prices,
-      tag,
-      sizes,
-      color,
-      image,
-      inStock,
-      category,
-      adjustedPrice,
-      keyword,
-    });
+      // Save the new product to the database
+      await newProduct.save();
 
-    await newProduct.save();
-
-    return res.status(201).json({
-      success: true,
-      message: 'Product created successfully',
-    });
+      res.status(201).json({ message: 'Product created successfully', product: newProduct });
   } catch (error) {
-    console.error('Error creating product:', error);
-    return res.status(500).json({
-      success: false,
-      message: 'Internal server error',
-    });
+      console.error('Error creating product:', error);
+      res.status(500).json({ error: 'Internal Server Error' });
   }
-};
 
+}
 // Update product
 exports.updateProduct = async (req, res) => {
   try {

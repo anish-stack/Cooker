@@ -21,10 +21,10 @@ router.get('/Logout',protect,LogoutUser)
 router.get('/Products/:category',getProductByKeywords)
 
 
-router.post('/create-product',protect,createProduct)
+router.post('/create-product',createProduct)
 router.get('/all-product',getAllProducts)
 router.post('/single-product/:id',getOneProduct)
-router.patch('/update-product/:id',protect,updateProduct)
+router.patch('/update-product/:id',updateProduct)
 router.delete('/delete-product/:id',protect,deleteProduct)
 router.get('/get-Transication-id/:OrderId',getTransactionID);   
 router.post('/create-order',protect,CreateOrder)

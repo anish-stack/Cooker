@@ -1,65 +1,39 @@
-const mongoose = require("mongoose");
+const mongoose = require('mongoose');
 
-const SizeAndStock = new mongoose.Schema({
-    SizeNumber: {
-        type: String,
-        required: [true, "Please provide a size number"] 
-    },
-    StockNumber: {
-        type: String,
+const productSchema = new mongoose.Schema({
 
+    productName: String,
+    images: [{
+        id: Number,
+        img: String
+    }],
+    property: String,
+    sizes: [{
+        id: Number,
+        size: String,
+        originalPrice: Number,
+        discoPrice: Number,
+    }],
+    originalPrice: Number,
+    discoPrice: Number,
+    vendor: String,
+    sku: String,
+    avilable: Boolean,
+    productType: String,
+    Desc: String,
+    Category:{
+        type:String
     },
-    StockPrice: {
-        type: String,
-    },
-    adjustedPrice:{
-        type: String,
-    }
-
-});
-
-const ProductSchema = new mongoose.Schema({
-    ProductName: {
-        type: String,
-        required: true
-    },
-    ProductDescription: {
-        type: String,
-        required: true
-    },
-    discountPrice: { 
-        type: Number
-    },
-    prices: {
-        type: Number,
-     
-    },
-    tag: {
-        type: String
-    },
-    sizes: {
-        type: [SizeAndStock],
-        required: true
-    },
-    color: {
-        type: [String]
-    },
-    image: {
-        type: [String],
-        required: true
-    },
-    inStock: {
-        type: Boolean,
-        default: true
-    },
-    category: {
-        type: String
-    },
-    keyword: {
-        type: [String]
+    addInfo: {
+        base: String,
+        material: String,
+        dishwasherSafe: String,
+        packageContent: String,
+        warranty: Number,
+        certification: String
     }
 });
 
-const Product = mongoose.model("Product", ProductSchema);
+const Product = mongoose.model('Product', productSchema);
 
 module.exports = Product;
