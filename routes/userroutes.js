@@ -3,6 +3,7 @@ const { RegisterUser, LogginUser, LogoutUser,getUserIdbyUser,createContact,getCo
 const { createProduct, getAllProducts, getOneProduct, updateProduct, deleteProduct, getProductByKeywords, getAllCategoryWithImagesAndNumberOfProducts } = require('../controllers/productController')
 const { protect } = require('../middleware/authmiddlleware')
 const { CreateOrder, orderForMe, orderForAdmin, UpdateOrderStatus, getTransactionID } = require('../controllers/orderController')
+const { createBanner, getllbanner, deleteBanner, markInactiveBanner, getAllActiveBanners } = require('../controllers/WebpageController')
 const router  =express.Router()
 
 
@@ -33,5 +34,19 @@ router.get('/admin-order',protect,orderForAdmin)
 router.get('/finduserbyid/:user_id',getUserIdbyUser)
 router.get('/getAllCategorey',getAllCategoryWithImagesAndNumberOfProducts)
 router.post('/update-order',UpdateOrderStatus)
+
+router.post('/Bannercreate',createBanner);
+
+// Route for getting all banners
+router.get('/Bannerall',getllbanner);
+router.get('/All-Active-Banner',getAllActiveBanners);
+
+
+// Route for deleting a banner
+router.delete('/Bannerdelete/:id',deleteBanner);
+
+// Route for marking a banner as inactive
+router.put('/Banner/inactive/:id',markInactiveBanner);
+
 
 module.exports=router 
