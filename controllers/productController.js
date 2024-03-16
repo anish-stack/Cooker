@@ -198,6 +198,59 @@ exports.getProductByKeywords = async (req, res) => {
   }
 };
 
+exports.getProductsByProductNameOrCategory = async (req, res) => {
+  try {
+    const searchTerm = req.query.searchTerm;
+    console.log(searchTerm)
+    console.log(`Search query: ${searchTerm}`);
+
+    const pageSize = 10;
+    const currentPage = Number(req.query.currentPage) - 1 || 0;
+
+    // Split the search term into individual words
+    const searchWords = searchTerm.split(' ');
+
+    // Construct an array of $or conditions to match any word in productName or Category
+    const orConditions = searchWords.map(word => (
+      { productName: { $regex: `.*${word}.*`, $options: 'i' } },
+      { Category: { $regex: `.*${word}.*`, $options: 'i' } }
+    ));
+
+    // Find products matching any word in the productName or Category
+    const products = await Product.find({
+      $or: [
+        { productName: { $regex: new RegExp(searchTerm, 'i') } }, // Case-insensitive search for productName
+        { Category: { $regex: new RegExp(searchTerm, 'i') } } // Case-insensitive search for Category
+      ]
+    })
+    .limit(pageSize)
+    .skip(currentPage * pageSize);
+    
+    console.log(`Products: ${products}`);
+
+    const totalProducts = await Product.countDocuments({
+      $or: [
+        { $or: orConditions }
+      ]
+    });
+
+    const totalPages = Math.ceil(totalProducts / pageSize);
+
+    res.status(200).json({
+      count: totalProducts,
+      totalPages: totalPages,
+      currentPage: currentPage + 1,
+      pageSize: pageSize,
+      data: products
+    });
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({ error: 'Internal Server Error' });
+  }
+};
+
+
+
 exports.getAllCategoryWithImagesAndNumberOfProducts = async (req, res) => {
   try {
     const categoriesWithInfo = await Product.aggregate([

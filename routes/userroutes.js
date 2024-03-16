@@ -1,6 +1,6 @@
 const express = require('express')
 const { RegisterUser, LogginUser, LogoutUser,getUserIdbyUser,createContact,getContacts,getAllUser ,changePassword  } = require('../controllers/usercontroller')
-const { createProduct, getAllProducts, getOneProduct, updateProduct, deleteProduct, getProductByKeywords, getAllCategoryWithImagesAndNumberOfProducts } = require('../controllers/productController')
+const { createProduct, getAllProducts, getOneProduct, updateProduct, deleteProduct, getProductByKeywords, getAllCategoryWithImagesAndNumberOfProducts, getProductsByProductNameOrCategory } = require('../controllers/productController')
 const { protect } = require('../middleware/authmiddlleware')
 const { CreateOrder, orderForMe, orderForAdmin, UpdateOrderStatus, getTransactionID } = require('../controllers/orderController')
 const { createBanner, getllbanner, deleteBanner, markInactiveBanner, getAllActiveBanners } = require('../controllers/WebpageController')
@@ -41,7 +41,7 @@ router.post('/Bannercreate',createBanner);
 router.get('/Bannerall',getllbanner);
 router.get('/All-Active-Banner',getAllActiveBanners);
 
-
+router.get('/search', getProductsByProductNameOrCategory);
 // Route for deleting a banner
 router.delete('/Bannerdelete/:id',deleteBanner);
 
