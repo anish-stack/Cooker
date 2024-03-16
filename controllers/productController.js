@@ -197,3 +197,32 @@ exports.getProductByKeywords = async (req, res) => {
     res.status(500).json({ message: 'Internal Server Error' });
   }
 };
+
+exports.getAllCategoryWithImagesAndNumberOfProducts = async (req, res) => {
+  try {
+    const categoriesWithInfo = await Product.aggregate([
+      // Group products by category
+      {
+        $group: {
+          _id: "$Category",
+          numberOfProducts: { $sum: 1 }, // Count the number of products in each category
+          firstImage: { $first: "$images.img" } // Get the first image URL of each category
+        }
+      },
+      // Project to reshape the output
+      {
+        $project: {
+          _id: 0,
+          category: "$_id",
+          image: { $arrayElemAt: ["$firstImage", 0] },
+          numberOfProducts: 1
+        }
+      }
+    ]);
+
+    res.status(200).json(categoriesWithInfo);
+  } catch (error) {
+    console.error('Error fetching categories with images and number of products:', error);
+    res.status(500).json({ error: 'Internal Server Error' });
+  }
+}

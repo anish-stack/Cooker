@@ -1,6 +1,6 @@
 const express = require('express')
 const { RegisterUser, LogginUser, LogoutUser,getUserIdbyUser,createContact,getContacts,getAllUser ,changePassword  } = require('../controllers/usercontroller')
-const { createProduct, getAllProducts, getOneProduct, updateProduct, deleteProduct, getProductByKeywords } = require('../controllers/productController')
+const { createProduct, getAllProducts, getOneProduct, updateProduct, deleteProduct, getProductByKeywords, getAllCategoryWithImagesAndNumberOfProducts } = require('../controllers/productController')
 const { protect } = require('../middleware/authmiddlleware')
 const { CreateOrder, orderForMe, orderForAdmin, UpdateOrderStatus, getTransactionID } = require('../controllers/orderController')
 const router  =express.Router()
@@ -31,7 +31,7 @@ router.post('/create-order',protect,CreateOrder)
 router.get('/my-order',protect,orderForMe)
 router.get('/admin-order',protect,orderForAdmin)
 router.get('/finduserbyid/:user_id',getUserIdbyUser)
-
+router.get('/getAllCategorey',getAllCategoryWithImagesAndNumberOfProducts)
 router.post('/update-order',UpdateOrderStatus)
 
 module.exports=router 
