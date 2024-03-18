@@ -24,9 +24,13 @@ const OrderSchema = new mongoose.Schema({
       landmark: { type: String },
     },
   ],
+  TotalAmount:{ type: String },
   PaymentDetails: {
     type: mongoose.Schema.Types.ObjectId,
     ref: "Payment",
+  },
+  transicationId:{
+    type: String
   },
   orderStatus: {
     type: String,

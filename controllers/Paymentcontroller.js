@@ -1,5 +1,5 @@
-const merchantid = "M22TZ2UNQ5ROH"
-const apikey = "df572d55-be5c-458a-9716-62eacfb5493a"
+const merchantid = "PGTESTPAYUAT"
+const apikey = "099eb0cd-02cf-4e2a-8aca-3e6c6aff0399"
 const crypto = require('crypto');
 const axios = require('axios');
 const Payment = require('../models/PaymentModal')
@@ -24,7 +24,7 @@ exports.newPayment = async (req, res) => {
             merchantUserId: Merchenat,
             name: checkUserPresent.Name || "User",
             amount: amount * 100,
-            redirectUrl: `https://motion-63l4.onrender.com/api/v2/status/${merchantTransactionId}?token=${req.headers.authorization.split(" ")[1]}`,
+            redirectUrl: `${process.env.BACKEND_URL}/api/v2/status/${merchantTransactionId}?token=${req.headers.authorization.split(" ")[1]}`,
             redirectMode: 'POST',
             mobileNumber: checkUserPresent.Number || "123456789",
             paymentInstrument: {
@@ -39,9 +39,10 @@ exports.newPayment = async (req, res) => {
         const checksum = sha256 + '###' + keyIndex;
 
         const prod_URL = "https://api.phonepe.com/apis/hermes/pg/v1/pay";
+        const testUrl = "https://api-preprod.phonepe.com/apis/pg-sandbox/pg/v1/pay"
         const options = {
             method: 'POST',
-            url: prod_URL,
+            url: testUrl,
             headers: {
                 accept: 'application/json',
                 'Content-Type': 'application/json',
@@ -104,11 +105,15 @@ exports.checkStatus = async (req, res) => {
     const string = `/pg/v1/status/${merchantId}/${merchantTransactionId}` + apikey;
     const sha256 = crypto.createHash('sha256').update(string).digest('hex');
     const checksum = sha256 + "###" + keyIndex;
+    // const testUrlCheck = "https://api-preprod.phonepe.com/apis/pg-sandbox/pg/v1"
+
+
+    const testUrlCheck = "https://api-preprod.phonepe.com/apis/pg-sandbox/pg/v1"
 
     // Prepare the options for the HTTP request
     const options = {
         method: 'GET',
-        url: `https://api.phonepe.com/apis/hermes/pg/v1/status/${merchantId}/${merchantTransactionId}`,
+        url: `${testUrlCheck}/status/${merchantId}/${merchantTransactionId}`,
         headers: {
             accept: 'application/json',
             'Content-Type': 'application/json',
@@ -116,6 +121,18 @@ exports.checkStatus = async (req, res) => {
             'X-MERCHANT-ID': `${merchantId}`
         }
     };
+
+    // Prepare the options for the HTTP  
+    // const options = {
+    //     method: 'GET',
+    //     url: `https://api.phonepe.com/apis/hermes/pg/v1/status/${merchantId}/${merchantTransactionId}`,
+    //     headers: {
+    //         accept: 'application/json',
+    //         'Content-Type': 'application/json',
+    //         'X-VERIFY': checksum,
+    //         'X-MERCHANT-ID': `${merchantId}`
+    //     }
+    // };
 
     // Send the HTTP request to check the payment status
     axios.request(options)
@@ -149,7 +166,7 @@ exports.checkStatus = async (req, res) => {
                 await newPayment.save();
 
                 // Redirect the user to the success page
-                const successRedirectUrl = `${process.env.FRONTEND_URL}/paymentsuccess/${merchantTransactionId}/success`;
+                const successRedirectUrl = `http://localhost:3000/order-confirmed`;
                 return res.redirect(successRedirectUrl);
             } else {
                 // Redirect the user to the failed payment page

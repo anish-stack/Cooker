@@ -5,27 +5,38 @@ const User = require("../models/user.model");
 const Payment = require("../models/PaymentModal");
 exports.CreateOrder = async (req, res) => {
   try {
-    const  formData  = req.body;
-    console.log(formData)
+    const formData = req.body;
 
     if (!formData) {
       return res.status(400).json({ error: "Invalid request data" });
     }
 
-    const { cartItems, address } = formData;
+    const { cartItems, address, TotalAmount } = formData;
 
     // Check if cartItems or address is empty
-    if (!cartItems || Object.keys(cartItems).length === 0 || !address) {
+    if (!cartItems || cartItems.length === 0 || !address || Object.keys(address).length === 0) {
       return res.status(422).json({ error: "Cart items or address is empty" });
     }
 
     const userId = req.user.id; // Assuming user ID is retrieved correctly
 
+    // Map over cartItems to transform each item into the structure expected by the schema
+    const products = cartItems.map(item => ({
+      id: item.id,
+      name: item.productName, // Assuming productName maps to name
+      price: item.price,
+      quantity: item.quantity,
+      image: [item.image], // Define image as an array of strings
+      sizes: item.size // Assuming size maps to sizes
+    }));
+
     const newOrder = new Order({
-      product: cartItems,
-      address,
+      product: products, // Pass the transformed products array to the product field
+      address: address,
+      TotalAmount: TotalAmount,
       user: userId
     });
+    console.log(newOrder)
 
     await newOrder.save();
 
@@ -35,36 +46,53 @@ exports.CreateOrder = async (req, res) => {
       newOrder
     });
   } catch (error) {
-    console.log(error);
+    console.error(error);
     return res.status(500).json({ error: "Internal server error" });
   }
 };
 
+
 //order for me
 exports.orderForMe = async (req, res) => {
   try {
-    const user = req.user?.id;
+    const userId = req.user?.id;
+
     // Get all orders from the database where the user is equal to the authenticated user
+    const userOrders = await Order.find({ user: userId });
 
-    const CheckUserInOrder = await Order.find({ user });
-
-    if (!CheckUserInOrder.length > 0) {
+    if (!userOrders || userOrders.length === 0) {
       return res.status(404).json({
         success: false,
-        message: "No Order Found",
+        message: "No Orders Found",
       });
     }
 
-    // console.log(CheckUserInOrder)
+    // Fetch payments associated with user's orders
+    const payments = await Payment.find({ order: { $in: userOrders.map(order => order._id) } });
+// console.log(payments)
+    // Map transaction IDs to corresponding order IDs
+    const orderTransactionMap = {};
+    payments.forEach(payment => {
+      orderTransactionMap[payment.order.toString()] = payment.tranxTionId;
+    });
 
-    res.status(201).json({
+    // Attach transaction IDs to orders
+    const ordersWithTransactions = userOrders.map(order => {
+      return {
+        ...order.toObject(),
+        transactionId: orderTransactionMap[order._id.toString()] || null
+      };
+    });
+
+    console.log(ordersWithTransactions.length)
+    res.status(200).json({
       success: true,
-      message: " Order Found",
-      data: CheckUserInOrder.reverse(),
+      message: "Orders Found",
+      data: ordersWithTransactions.reverse(), // Reverse the order of orders if needed
     });
   } catch (error) {
-    console.log(error);
-    res.status(501).json({
+    console.error(error);
+    res.status(500).json({
       success: false,
       message: "Internal Server Error",
     });

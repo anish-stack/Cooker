@@ -1,59 +1,85 @@
 const Product = require("../models/product.model");
+const multer = require('multer');
+const cloudinary = require('cloudinary').v2;
 
-// Create product
+// Configure Cloudinary
+cloudinary.config({
+  cloud_name: process.env.CLOUDINARY_API_NAME,
+  api_key: process.env.CLOUDINARY_API,
+  api_secret: process.env.CLOUDINARY_API_SECRET,
+});
+
+// Multer setup
+const storage = multer.memoryStorage();
+const upload = multer({
+  storage,
+  limits: { fileSize: 1024 * 1024 * 5 }, // Limiting file size to 5MB, adjust as needed
+  fileFilter: (req, file, cb) => {
+    // Check file type, you can customize this according to your requirements
+    if (file.mimetype.startsWith('image')) {
+      cb(null, true);
+    } else {
+      cb(new Error('Only images are allowed!'));
+    }
+  },
+}).array('image', 10); // '10' represents the maximum number of files allowed, adjust as needed
+
 exports.createProduct = async (req, res) => {
-
   try {
-      const {
-
-          productName,
-          images,
-          property,
-          sizes,
-          originalPrice,
-          discoPrice,
-          vendor,
-          sku,
-          avilable,
-          productType,
-          Desc,
-          Category,
-          addInfo
-      } = req.body;
-
-      // Check if required fields are present
-      if ( !productName || !images || !property || !sizes || !originalPrice || !discoPrice || !vendor || !sku || !avilable || !productType || !Desc || !Category || !addInfo) {
-          return res.status(400).json({ error: 'Missing required fields' });
+    upload(req, res, async function (err) {
+      if (err) {
+        // If file upload fails, return error response
+        return res.status(400).json({ success: false, message: err.message });
       }
+      console.log(req.file);
+      // If file upload succeeds, continue with product creation
+      // Extracting multiple images from req.files array and uploading to Cloudinary
+      // const uploadedImages = await Promise.all(req.files.map(file =>
+      //   cloudinary.uploader.upload(file.buffer.toString('base64'))
+      // ));
+
+      // Extract other fields from req.body
+      const {
+        productName,
+        property,
+        sizes,
+        originalPrice,
+        discoPrice,
+        vendor,
+        sku,
+        avilable,
+        productType,
+        Desc,
+        Category,
+        addInfo
+      } = req.body;
 
       // Create a new product instance
       const newProduct = new Product({
-     
-          productName,
-          images,
-          property,
-          sizes,
-          originalPrice,
-          discoPrice,
-          vendor,
-          sku,
-          avilable,
-          productType,
-          Desc,
-          Category,
-          addInfo
+        productName,
+        sizes,
+        originalPrice,
+        discoPrice,
+        vendor,
+        sku,
+        avilable,
+        productType,
+        Desc,
+        Category,
+        addInfo
       });
 
       // Save the new product to the database
       await newProduct.save();
 
       res.status(201).json({ message: 'Product created successfully', product: newProduct });
+    });
   } catch (error) {
-      console.error('Error creating product:', error);
-      res.status(500).json({ error: 'Internal Server Error' });
+    console.error('Error creating product:', error);
+    res.status(500).json({ error: 'Internal Server Error' });
   }
+};
 
-}
 // Update product
 exports.updateProduct = async (req, res) => {
   try {
@@ -179,8 +205,8 @@ exports.getProductByKeywords = async (req, res) => {
   try {
     const { category } = req.params;
     console.log(req.params)
-    let products = await Product.find({ Category:category });
-    
+    let products = await Product.find({ Category: category });
+
     // Check if products were found
     if (products.length === 0) {
       return res.status(404).json({ message: 'No products found for the given keyword' });
@@ -200,54 +226,44 @@ exports.getProductByKeywords = async (req, res) => {
 
 exports.getProductsByProductNameOrCategory = async (req, res) => {
   try {
-    const searchTerm = req.query.searchTerm;
-    console.log(searchTerm)
-    console.log(`Search query: ${searchTerm}`);
+      const searchTerm = req.query.searchTerm;
+      const pageSize = 10;
+      const currentPage = Number(req.query.currentPage) || 1;
 
-    const pageSize = 10;
-    const currentPage = Number(req.query.currentPage) - 1 || 0;
+      const searchWords = searchTerm.split(' ');
 
-    // Split the search term into individual words
-    const searchWords = searchTerm.split(' ');
+      const orConditions = searchWords.map(word => ({
+          $or: [
+              { productName: { $regex: new RegExp(word, 'i') } },
+              { category: { $regex: new RegExp(word, 'i') } }
+          ]
+      }));
 
-    // Construct an array of $or conditions to match any word in productName or Category
-    const orConditions = searchWords.map(word => (
-      { productName: { $regex: `.*${word}.*`, $options: 'i' } },
-      { Category: { $regex: `.*${word}.*`, $options: 'i' } }
-    ));
+      const products = await Product.find({
+          $or: orConditions
+      })
+      .limit(pageSize)
+      .skip((currentPage - 1) * pageSize);
 
-    // Find products matching any word in the productName or Category
-    const products = await Product.find({
-      $or: [
-        { productName: { $regex: new RegExp(searchTerm, 'i') } }, // Case-insensitive search for productName
-        { Category: { $regex: new RegExp(searchTerm, 'i') } } // Case-insensitive search for Category
-      ]
-    })
-    .limit(pageSize)
-    .skip(currentPage * pageSize);
-    
-    console.log(`Products: ${products}`);
+      const totalProducts = await Product.countDocuments({
+          $or: orConditions
+      });
 
-    const totalProducts = await Product.countDocuments({
-      $or: [
-        { $or: orConditions }
-      ]
-    });
+      const totalPages = Math.ceil(totalProducts / pageSize);
 
-    const totalPages = Math.ceil(totalProducts / pageSize);
-
-    res.status(200).json({
-      count: totalProducts,
-      totalPages: totalPages,
-      currentPage: currentPage + 1,
-      pageSize: pageSize,
-      data: products
-    });
+      res.status(200).json({
+          totalCount: totalProducts,
+          totalPages: totalPages,
+          currentPage: currentPage,
+          pageSize: pageSize,
+          data: products
+      });
   } catch (error) {
-    console.log(error);
-    res.status(500).json({ error: 'Internal Server Error' });
+      console.log(error);
+      res.status(500).json({ error: 'Internal Server Error' });
   }
 };
+
 
 
 
