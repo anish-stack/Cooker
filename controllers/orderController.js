@@ -214,3 +214,31 @@ exports.getTransactionID = async(req,res)=>{
 
 
 }
+
+exports.getSingleOrderById = async (req, res) => {
+  try {
+    // Extract the order ID from the request parameters
+    const orderId = req.params.id;
+
+    // Attempt to find the order by its ID
+    const order = await Order.findById(orderId);
+
+    // If the order doesn't exist, return a 404 Not Found response
+    if (!order) {
+      return res.status(404).json({ msg: 'Order not found' });
+    }
+
+    // If the order is found, return a 200 OK response with the order data
+    res.status(200).json({
+      success: true,
+      data: order,
+    });
+  } catch (error) {
+    // Log the error for server-side debugging
+    console.error(error);
+
+    // Return a generic 500 Internal Server Error response
+    // In a production environment, you might want to hide specific error details or categorize errors differently
+    res.status(500).json({ error: 'Internal Server Error' });
+  }
+};
