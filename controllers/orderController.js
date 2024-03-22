@@ -11,7 +11,8 @@ exports.CreateOrder = async (req, res) => {
       return res.status(400).json({ error: "Invalid request data" });
     }
 
-    const { cartItems, address, TotalAmount } = formData;
+    const { cartItems, address, TotalAmount ,
+      PyamentType} = formData;
 
     // Check if cartItems or address is empty
     if (!cartItems || cartItems.length === 0 || !address || Object.keys(address).length === 0) {
@@ -34,6 +35,7 @@ exports.CreateOrder = async (req, res) => {
       product: products, // Pass the transformed products array to the product field
       address: address,
       TotalAmount: TotalAmount,
+      PyamentType,
       user: userId
     });
     console.log(newOrder)
@@ -113,34 +115,41 @@ exports.makeOrderCancelAndReturn = async()=>{
 
 }
 //order for admin
-
 exports.orderForAdmin = async (req, res) => {
   try {
-    console.log("I am here");
-    const CheckUserInOrder = await Order.find();
-    const OrderIds = CheckUserInOrder.map((item) => item._id);
-
-    // Use the $in operator to find payments for all order IDs
-    const paymentS = await Payment.find({ order: { $in: OrderIds } });
+    // Fetch orders from the database
+    const userOrders = await Order.find();
     
-    console.log(paymentS);
-
-    // Filter orders based on whether they have corresponding payments
-    const ordersWithPayments = CheckUserInOrder.filter((order) => {
-      return paymentS.some((payment) => payment.order.equals(order._id));
-    });
-
-    if (!ordersWithPayments.length > 0) {
+    // Check if there are any orders
+    if (!userOrders.length > 0) {
       return res.status(404).json({
         success: false,
-        message: "No Orders Found with Payments",
+        message: "No Orders Found",
       });
     }
+
+    // Retrieve order IDs from fetched orders
+    const orderIds = userOrders.map((order) => order._id);
+
+    // Find payments for the retrieved order IDs
+    const payments = await Payment.find({ order: { $in: orderIds } });
+
+    // Map transaction IDs to corresponding order IDs
+    const orderTransactionMap = {};
+    payments.forEach((payment) => {
+      orderTransactionMap[payment.order.toString()] = payment.tranxTionId;
+    });
+
+    // Attach transaction IDs to orders
+    const ordersWithTransactions = userOrders.map((order) => ({
+      ...order.toObject(),
+      transactionId: orderTransactionMap[order._id.toString()] || null,
+    }));
 
     res.status(201).json({
       success: true,
       message: "Admin Orders Found with Payments",
-      data: ordersWithPayments,
+      data: ordersWithTransactions,
     });
   } catch (error) {
     console.log(error);
@@ -150,6 +159,7 @@ exports.orderForAdmin = async (req, res) => {
     });
   }
 };
+
 //update order
 exports.UpdateOrderStatus = async (req, res) => {
   try {

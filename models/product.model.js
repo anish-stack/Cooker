@@ -17,7 +17,10 @@ const productSchema = new mongoose.Schema({
     discoPrice: Number,
     vendor: String,
     sku: String,
-    avilable: Boolean,
+    avilable: {
+        type:Boolean,
+        default:true
+    },
     productType: String,
     Desc: String,
     Category:{

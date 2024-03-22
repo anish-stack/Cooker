@@ -32,10 +32,14 @@ const OrderSchema = new mongoose.Schema({
   transicationId:{
     type: String
   },
+  PyamentType:{
+    type: String,
+    default: "Cod",
+
+  },
   orderStatus: {
     type: String,
-    enum: ["Pending", "Success", "Delivered", "Canceled"],
-    default: "Pending",
+    default: "Order Confirmation Pending"    ,
   },
 }, { timestamps: true });
 
